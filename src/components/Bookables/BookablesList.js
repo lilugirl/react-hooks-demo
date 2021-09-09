@@ -1,65 +1,27 @@
-import { useEffect,useState,useRef } from "react";
+import {Link ,useNavigate} from 'react-router-dom'
 import { FaArrowRight } from "react-icons/fa";
-import Spinner from "../UI/Spinner";
-import useFetch from '../../utils/useFetch'
 
-export default function BookablesList({bookable,setBookable}) {
- 
-const {data:bookables=[],status,error}=useFetch("http://localhost:3002/bookables")
 
+export default function BookablesList({bookable,bookables,getUrl}) {
   const group=bookable?.group;
-
   const bookablesInGroup=bookables.filter(b=>b.group===group)
   const groups = [...new Set(bookables.map((b) => b.group))];
+  console.log('bookalbe list bookables',bookables);
 
- const timerRef=useRef(null);
- const nextButtonRef=useRef();
+  const navigate=useNavigate();
 
- useEffect(()=>{
-   setBookable(bookables[0])
- },[bookables,setBookable])
-
- 
-
-  // useEffect(()=>{
-  //   timerRef.current=setInterval(()=>{
-  //     console.log('timer run')
-  //   //  nextBookable()
-    
-  //   },10000);
-
-  //   return ()=>{
-  //     console.log('清理 timer')
-  //     clearInterval(timerRef.current)
-  //   }
-
-  // },[])
-
-  function changeBookable(selectedBookable) {
-    setBookable(selectedBookable);
-    nextButtonRef.current.focus();
+  function changeGroup(event) {
+    const bookablesInSelectedGroup=bookables.filter(b=>b.group===event.target.value);
+    navigate(getUrl(bookablesInSelectedGroup[0].id))
   }
 
   function nextBookable() {
     const i=bookablesInGroup.indexOf(bookable);
     const nextIndex=(i+1) % bookablesInGroup.length;
     const nextBookable=bookablesInGroup[nextIndex];
-    setBookable(nextBookable);
+    navigate(getUrl(nextBookable.id))
   }
 
-  function changeGroup(event) {
-    const bookablesInSelectedGroup=bookables.filter(b=>b.group===event.target.value);
-    setBookable(bookablesInSelectedGroup[0]);
-  }
-
-  
-  if(status==="error"){
-    return <p>{error.message}</p>
-  }
-
-  if(status==='loading'){
-    return <p><Spinner /> Loading bookables...</p>
-  }
   return (
     <div>
     <select value={group} onChange={changeGroup}>
@@ -76,14 +38,14 @@ const {data:bookables=[],status,error}=useFetch("http://localhost:3002/bookables
           className={b.id === bookable.id ? "selected" : null}
          
         >
-          <button className="btn"  onClick={() => {
-            changeBookable(b);
-          }}>{b.title}</button>
+         <Link to={getUrl(b.id)} className="btn" replace={true}> 
+         {b.title}
+         </Link>
         </li>
       ))}
     </ul>
     <p>
-      <button className="btn" autoFocus onClick={nextBookable} ref={nextButtonRef} autoFocus>
+      <button className="btn" autoFocus onClick={nextBookable}>
         <FaArrowRight />
         <span>Next</span>
       </button>

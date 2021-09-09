@@ -6,8 +6,7 @@ import {
   Link
 } from "react-router-dom";
 import {UserProvider} from './Users/UserContext';
-
-import "../App.css";
+import { QueryClient,QueryClientProvider } from 'react-query';
 
 import {FaCalendarAlt, FaDoorOpen, FaUsers} from "react-icons/fa";
 
@@ -18,10 +17,15 @@ import UserPicker from "./Users/UserPicker";
 import AnagramsPage from "./Anagrams/AnagramsPage";
 import ProductPage from "./Anagrams/ProductPage";
 
+
+import "../App.css";
+const queryClient=new QueryClient();
+
 export default function App () {
   const [user,setUser]=useState();
 
   return (
+    <QueryClientProvider client={queryClient}>
     <UserProvider >
     <Router>
       <div className="App">
@@ -74,5 +78,6 @@ export default function App () {
       </div>
     </Router>
     </UserProvider>
+    </QueryClientProvider>
   );
 }

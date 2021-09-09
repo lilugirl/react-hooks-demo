@@ -1,15 +1,33 @@
-import {useState} from 'react'
-// import WeekPicker from "./WeekPicker";
-import Bookings from './Bookings';
+import { shortISO } from '../../utils/date-wrangler';
+import useFetch from '../../utils/useFetch';
+import {useBookingsParams} from './bookingsHooks'
+
 import BookablesList from '../Bookables/BookablesList';
-let index2=0;
+import Bookings from './Bookings';
+import PageSpinner from '../UI/Spinner';
+
 export default function BookingsPage () {
-  const [bookable,setBookable]=useState(null)
-  index2++;
-  console.log('booking page 渲染',index2,bookable)
+  const {data:bookables=[],status,error}=useFetch("http://localhost:3002/bookables")
+  const {date,bookableId}=useBookingsParams();
+  const bookable=bookables.find(b=>b.id===bookableId) || bookables[0];
+  function getUrl(id){
+    const root=`/bookings?bookableId=${id}`;
+    return date? `${root}&date=${shortISO(date)}`:root;
+  }
+
+  if(status==='error'){
+    return <p>{error.message}</p>
+  }
+
+  if(status==='loading'){
+    return <PageSpinner />
+  }
+
+
+  
   return (
     <main className="bookings-page">
-      <BookablesList bookable={bookable} setBookable={setBookable} />
+      <BookablesList bookable={bookable} bookables={bookables} getUrl={getUrl} />
       <Bookings bookable={bookable} />
     </main>
   );

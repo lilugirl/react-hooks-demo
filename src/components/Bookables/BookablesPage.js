@@ -8,7 +8,7 @@ export default function BookablesPage () {
   return (
    <Routes>
      <Route path="/:id">
-        <BookableNew />
+        <BookablesView />
      </Route>
      <Route path="/">
         <BookablesView/>

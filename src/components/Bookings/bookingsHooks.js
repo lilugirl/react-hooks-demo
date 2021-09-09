@@ -1,8 +1,38 @@
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from 'react-query';
 import {useMemo} from 'react'
 import { getGrid } from './grid-builder';
-import { shortISO } from "../../utils/date-wrangler";
-import useFetch from "../../utils/useFetch";
+import { shortISO,isDate } from "../../utils/date-wrangler";
+import getData from '../../utils/api';
 import { transformBookings } from "./grid-builder";
+export function useBookingsParams(){
+    const [searchParams,setSearchParams]=useSearchParams();
+    const searchDate=searchParams.get("date");
+    const bookableId=searchParams.get("bookableId");
+    const date=isDate(searchDate)?new Date(searchDate):new Date()
+    const idInt=parseInt(bookableId,10)
+    const hasId=!isNaN(idInt);
+
+    function setBookingsDate(data){
+        const params={};
+        if(hasId) {
+            params.bookableId=bookableId
+        }
+
+        if(isDate(date)){
+            params.date=date
+        }
+
+        if(params.date || params.bookableId!==undefined){
+            setSearchParams(params,{replace:true})
+        }
+    }
+    return {
+        date,
+        bookableId:hasId?idInt:undefined,
+        setBookingsDate
+    }
+}
 export  function useBookings(bookableId,startDate,endDate){
     const start=shortISO(startDate);
     const end=shortISO(endDate);
@@ -12,7 +42,7 @@ export  function useBookings(bookableId,startDate,endDate){
     const queryString=`bookableId=${bookableId}` +
     `&date_gte=${start}&date_lte=${end}`
 
-    const query=useFetch(`${urlRoot}?${queryString}`);
+    const query=useQuery(["bookings",bookableId,start,end],()=>getData(`${urlRoot}?${queryString}`))
     return {
         bookings:query.data?transformBookings(query.data):{},
         ...query
